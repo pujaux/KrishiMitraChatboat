@@ -34,26 +34,32 @@ Local soil types
 Climate-aware crop suggestions
 ## 🖥️ Tech Stack
 LayerTechnologyFrontendHTML5, CSS3, Vanilla JavaScriptAI  BackendPython + Flask + Flask-CORSFontsPlus Jakarta Sans + Tiro Devanagari Hindi (Google Fonts)RecommendationCustom Rule-Based Engine (JavaScript)HostingGitHub Pages (Frontend)
-How to Run Locally
+
+
 ## Prerequisites
 
 Python 3.8+
 VS Code with Live Server extension
+
 ## 🎓 Academic Context
 This project was developed as part of a college project on AI-powered agricultural assistance. The goal was to create a practical, farmer-friendly tool that:
 
-Requires no technical knowledge to use
-Works in the farmer's native language
-Provides both offline (rule-based) and online (AI) capabilities
-Is deployable for free using GitHub Pages
+1)Requires no technical knowledge to use
+2)Works in the farmer's native language
+3)Provides both offline (rule-based) and online (AI) capabilities
+4)Is deployable for free using GitHub Pages
 ## Future Scope
 
- Image-based disease detection using CNN / TensorFlow.js,
+ Image-based disease detection using CNN / TensorFlow.js
  
- Weather API integration for real-time crop alerts,
+ Weather API integration for real-time crop alerts
  
- Voice input support for farmers who cannot type,
+ Voice input support for farmers who cannot type
+ 
  SMS-based chatbot for feature phone users
+ 
  Integration with government mandi prices API
+ 
  Mobile app version (React Native / Flutter)
+ 
  More regional languages (Marathi, Gujarati, Punjabi)
