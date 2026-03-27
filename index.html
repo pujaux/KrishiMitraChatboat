@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KrishiMitra AI – फसल और पशु रोग सहायक</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #1a3a1f;
+    --green-mid: #2d6a38;
+    --green-bright: #4caf50;
+    --green-light: #a8d5ab;
+    --green-pale: #e8f5e9;
+    --amber: #f59e0b;
+    --amber-light: #fef3c7;
+    --soil: #8b5e3c;
+    --soil-light: #d4a574;
+    --cream: #fefdf8;
+    --text-dark: #1a2e1c;
+    --text-mid: #3d5c42;
+    --text-muted: #6b8c6f;
+    --border: #c8e6ca;
+    --shadow: rgba(26,58,31,0.12);
+    --chat-bg: #f4faf5;
+    --user-bubble: #2d6a38;
+    --ai-bubble: #ffffff;
+    --sidebar-w: 300px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--green-dark);
+    color: var(--text-dark);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--green-dark) 0%, #0f2812 100%);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(76,175,80,0.2);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(76,175,80,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--green-bright), #81c784);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(76,175,80,0.4);
+    flex-shrink: 0;
+  }
+  .logo-text h1 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+  }
+  .logo-text p {
+    font-size: 11px;
+    color: var(--green-light);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  .header-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-green { background: rgba(76,175,80,0.2); color: var(--green-light); border: 1px solid rgba(76,175,80,0.3); }
+  .badge-amber { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .online-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green-bright);
+    box-shadow: 0 0 6px var(--green-bright);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
+
+  /* ── MAIN LAYOUT ── */
+  .app-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: #0f2812;
+    border-right: 1px solid rgba(76,175,80,0.15);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid rgba(76,175,80,0.1);
+  }
+  .sidebar-section h3 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  /* Quick Topic Chips */
+  .topic-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .chip-disease { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.2); }
+  .chip-crop { background: rgba(76,175,80,0.15); color: var(--green-light); border-color: rgba(76,175,80,0.2); }
+  .chip-soil { background: rgba(139,94,60,0.25); color: var(--soil-light); border-color: rgba(139,94,60,0.3); }
+  .chip-cattle { background: rgba(245,158,11,0.15); color: #fbbf24; border-color: rgba(245,158,11,0.2); }
+  .chip-season { background: rgba(99,102,241,0.15); color: #a5b4fc; border-color: rgba(99,102,241,0.2); }
+  .chip:hover { transform: translateY(-1px); filter: brightness(1.2); }
+
+  /* Season Selector */
+  .season-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .season-btn {
+    padding: 8px 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(76,175,80,0.2);
+    background: rgba(76,175,80,0.05);
+    color: var(--green-light);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .season-btn:hover, .season-btn.active {
+    background: rgba(76,175,80,0.2);
+    border-color: var(--green-bright);
+    color: #fff;
+  }
+  .season-emoji { display: block; font-size: 18px; margin-bottom: 2px; }
+
+  /* Info Cards */
+  .info-card {
+    background: rgba(76,175,80,0.08);
+    border: 1px solid rgba(76,175,80,0.15);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .info-card h4 { font-size: 12px; color: var(--green-light); font-weight: 600; margin-bottom: 4px; }
+  .info-card p { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Language Toggle */
+  .lang-toggle {
+    display: flex;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .lang-btn {
+    flex: 1;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .lang-btn.active {
+    background: var(--green-mid);
+    color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(76,175,80,0.2) transparent;
+  }
+
+  /* ── MAIN CHAT AREA ── */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--chat-bg);
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  /* Tab Bar */
+  .tab-bar {
+    display: flex;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    flex-shrink: 0;
+  }
+  .tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--green-mid); border-bottom-color: var(--green-bright); }
+  .tab:hover { color: var(--green-mid); }
+
+  /* Chat Panel */
+  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
+  .panel.active { display: flex; }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* Welcome Card */
+  .welcome-card {
+    background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-card::before {
+    content: '🌾';
+    position: absolute;
+    right: 20px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 64px;
+    opacity: 0.15;
+  }
+  .welcome-card h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .welcome-card .hindi { font-family: 'Tiro Devanagari Hindi', serif; font-size: 14px; color: var(--green-light); margin-bottom: 12px; }
+  .welcome-card p { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.6; }
+
+  /* Suggestion Pills */
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .suggestion-pill {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+  }
+  .suggestion-pill:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+
+  /* Messages */
+  .msg { display: flex; gap: 10px; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .msg.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .avatar-ai { background: linear-gradient(135deg, var(--green-mid), var(--green-bright)); }
+  .avatar-user { background: linear-gradient(135deg, #1a3a1f, #2d6a38); border: 2px solid var(--green-bright); }
+
+  .bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    position: relative;
+  }
+  .bubble-ai {
+    background: var(--ai-bubble);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px var(--shadow);
+    color: var(--text-dark);
+  }
+  .bubble-user {
+    background: var(--user-bubble);
+    color: white;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 8px rgba(45,106,56,0.4);
+  }
+  .bubble .hindi-text {
+    font-family: 'Tiro Devanagari Hindi', serif;
+    font-size: 13px;
+    color: var(--text-mid);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .bubble-user .hindi-text {
+    color: rgba(255,255,255,0.8);
+    border-top-color: rgba(255,255,255,0.2);
+  }
+
+  /* AI response formatting */
+  .bubble-ai strong { color: var(--green-dark); font-weight: 700; }
+  .bubble-ai .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .tag-disease { background: #fee2e2; color: #dc2626; }
+  .tag-crop { background: var(--green-pale); color: var(--green-mid); }
+  .tag-info { background: var(--amber-light); color: #92400e; }
+
+  /* Typing Indicator */
+  .typing { display: flex; align-items: center; gap: 4px; padding: 14px 16px; }
+  .typing span { width: 6px; height: 6px; background: var(--green-light); border-radius: 50%; animation: bounce 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  /* Input Area */
+  .input-area {
+    padding: 16px 20px;
+    background: white;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .input-wrap {
+    flex: 1;
+    background: var(--chat-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .input-wrap:focus-within { border-color: var(--green-bright); box-shadow: 0 0 0 3px rgba(76,175,80,0.1); }
+  textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--text-dark);
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    line-height: 1.5;
+  }
+  textarea::placeholder { color: var(--text-muted); }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(45,106,56,0.4);
+    flex-shrink: 0;
+  }
+  .send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45,106,56,0.5); }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .input-hints {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .hint-btn {
+    padding: 4px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .hint-btn:hover { border-color: var(--green-bright); color: var(--green-mid); background: var(--green-pale); }
+
+  /* ── RECOMMENDATION PANEL ── */
+  .reco-panel {
+    padding: 20px;
+    overflow-y: auto;
+    gap: 16px;
+    scrollbar-width: thin;
+  }
+
+  .reco-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .reco-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .reco-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--shadow); border-color: var(--green-light); }
+  .reco-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .reco-icon { font-size: 28px; }
+  .reco-card h3 { font-size: 14px; font-weight: 700; color: var(--green-dark); }
+  .reco-card .hindi-name { font-family: 'Tiro Devanagari Hindi', serif; font-size: 12px; color: var(--text-muted); }
+  .reco-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .meta-tag {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .meta-season { background: #dbeafe; color: #1d4ed8; }
+  .meta-soil { background: #fef3c7; color: #92400e; }
+  .meta-yield { background: var(--green-pale); color: var(--green-mid); }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--green-mid), var(--green-bright)); }
+
+  /* Disease Guide Panel */
+  .disease-section { margin-bottom: 20px; }
+  .disease-section h2 { font-size: 16px; font-weight: 700; color: var(--green-dark); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+  .disease-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .disease-card:hover { border-color: var(--green-light); transform: translateX(2px); }
+  .disease-card.plant { border-left: 3px solid var(--green-bright); }
+  .disease-card.cattle { border-left: 3px solid var(--amber); }
+  .disease-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .disease-badge.plant { background: var(--green-pale); color: var(--green-mid); }
+  .disease-badge.cattle { background: var(--amber-light); color: #92400e; }
+  .disease-info h4 { font-size: 13px; font-weight: 700; color: var(--text-dark); }
+  .disease-info .hindi { font-family: 'Tiro Devanagari Hindi', serif; font-size: 11px; color: var(--text-muted); }
+  .disease-info p { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+
+  /* Soil Fertility Panel */
+  .soil-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .soil-indicator { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .soil-label { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+  .soil-value { font-size: 13px; font-weight: 700; color: var(--green-mid); }
+  .soil-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+  .soil-fill { height: 100%; border-radius: 4px; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .reco-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .hindi {
+    font-family: 'Tiro Devanagari Hindi', serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .error-msg {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #dc2626;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🌿</div>
+    <div class="logo-text">
+      <h1>KrishiMitra AI</h1>
+      <p>कृषि मित्र – Smart Farming Assistant</p>
+    </div>
+  </div>
+  <div class="header-badges">
+    <div class="online-dot"></div>
+    <div class="badge badge-green">AI Powered</div>
+    <div class="badge badge-amber">Hindi + English</div>
+  </div>
+</div>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- Language Toggle -->
+      <div class="sidebar-section">
+        <h3>Response Language / भाषा</h3>
+        <div class="lang-toggle">
+          <button class="lang-btn active" id="langBoth" onclick="setLang('both')">Both / दोनों</button>
+          <button class="lang-btn" id="langHi" onclick="setLang('hindi')">हिंदी</button>
+          <button class="lang-btn" id="langEn" onclick="setLang('english')">English</button>
+        </div>
+      </div>
+
+      <!-- Season -->
+      <div class="sidebar-section">
+        <h3>Current Season / मौसम</h3>
+        <div class="season-grid">
+          <div class="season-btn" onclick="setSeason('Kharif (खरीफ)')"><span class="season-emoji">🌧️</span>Kharif<br><small>खरीफ</small></div>
+          <div class="season-btn active" onclick="setSeason('Rabi (रबी)')"><span class="season-emoji">❄️</span>Rabi<br><small>रबी</small></div>
+          <div class="season-btn" onclick="setSeason('Zaid (जायद)')"><span class="season-emoji">☀️</span>Zaid<br><small>जायद</small></div>
+          <div class="season-btn" onclick="setSeason('Perennial (बारहमासी)')"><span class="season-emoji">🌿</span>Perennial<br><small>बारहमासी</small></div>
+        </div>
+      </div>
+
+      <!-- Quick Topics -->
+      <div class="sidebar-section">
+        <h3>Quick Questions / त्वरित प्रश्न</h3>
+        <div class="topic-chips">
+          <div class="chip chip-disease" onclick="sendChip('My crop leaves are turning yellow. What disease is this?')">🍂 Yellow Leaves</div>
+          <div class="chip chip-cattle" onclick="sendChip('My cow is not eating and has fever. What should I do?')">🐄 Cow Fever</div>
+          <div class="chip chip-soil" onclick="sendChip('How do I improve soil fertility for wheat crop?')">🌱 Soil Fertility</div>
+          <div class="chip chip-crop" onclick="sendChip('What crop should I grow in 2 acres of clay soil in winter?')">🌾 Best Crop</div>
+          <div class="chip chip-disease" onclick="sendChip('My tomato plant has black spots on leaves and fruit.')">🍅 Tomato Disease</div>
+          <div class="chip chip-cattle" onclick="sendChip('What vaccinations does my buffalo need?')">💉 Cattle Vaccine</div>
+          <div class="chip chip-season" onclick="sendChip('Which vegetables are best to grow in summer season?')">☀️ Summer Crops</div>
+          <div class="chip chip-soil" onclick="sendChip('How to test soil pH at home and what it means for crops?')">🧪 Soil pH</div>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="sidebar-section">
+        <div class="info-card">
+          <h4>📍 Madhya Pradesh Focus</h4>
+          <p>Recommendations tailored for MP region – soil types, weather patterns & local crops.</p>
+        </div>
+        <div class="info-card">
+          <h4>🚨 Emergency Helpline</h4>
+          <p>Kisan Call Centre: <strong style="color:#4caf50">1800-180-1551</strong> (Free, 24/7)</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="chat-area">
+
+    <!-- TABS -->
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('chat', this)">💬 Chat Assistant <span style="font-family:'Tiro Devanagari Hindi',serif;font-size:11px;color:var(--text-muted)"> / सहायक</span></div>
+      <div class="tab" onclick="switchTab('reco', this)">🌾 Crop Recommendations</div>
+      <div class="tab" onclick="switchTab('disease', this)">🔬 Disease Guide</div>
+      <div class="tab" onclick="switchTab('soil', this)">🌱 Soil Advisor</div>
+    </div>
+
+    <!-- ── CHAT PANEL ── -->
+    <div class="panel active" id="panel-chat">
+      <div class="messages" id="messages">
+
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+          <h2>🙏 Namaste, Kisan Bhai!</h2>
+          <div class="hindi">नमस्ते! आपका स्वागत है KrishiMitra में</div>
+          <p>I am your AI farming assistant. Ask me about <strong>crop diseases, cattle health, what to grow, soil fertility,</strong> seasonal guidance and more — in Hindi or English!</p>
+          <div class="suggestions">
+            <div class="suggestion-pill" onclick="sendSuggestion(this)">🌾 मेरी गेहूं की फसल में रोग है</div>
+            <div class="suggestion-pill" onclick="sendSuggestion(this)">🐄 मेरी गाय बीमार है</div>
+            <div class="suggestion-pill" onclick="sendSuggestion(this)">🌧️ खरीफ में क्या उगाऊं?</div>
+            <div class="suggestion-pill" onclick="sendSuggestion(this)">🧪 मिट्टी की उर्वरकता कैसे बढ़ाएं?</div>
+            <div class="suggestion-pill" onclick="sendSuggestion(this)">Best crop for 1 acre in winter?</div>
+            <div class="suggestion-pill" onclick="sendSuggestion(this)">My buffalo has mouth ulcers</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <div class="input-hints">
+          <button class="hint-btn" onclick="setHint('मेरी फसल में पत्तियां पीली हो रही हैं')">🍂 पत्तियां पीली</button>
+          <button class="hint-btn" onclick="setHint('What fertilizer for paddy crop?')">🌾 Fertilizer</button>
+          <button class="hint-btn" onclick="setHint('मेरे पशु में FMD के लक्षण हैं')">🐄 FMD रोग</button>
+          <button class="hint-btn" onclick="setHint('2 एकड़ में कौन सी फसल लगाऊं?')">📐 2 एकड़</button>
+          <button class="hint-btn" onclick="setHint('Organic farming tips for small farmers')">🌿 Organic</button>
+        </div>
+        <div class="input-row">
+          <div class="input-wrap">
+            <textarea id="userInput" placeholder="अपना सवाल यहाँ लिखें... / Ask your farming question here..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          </div>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RECOMMENDATION PANEL ── -->
+    <div class="panel" id="panel-reco">
+      <div class="reco-panel messages">
+        <div class="section-title">🌾 Crop Recommendations <span class="hindi">/ फसल सुझाव</span></div>
+
+        <div id="recoLoading" style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px;">
+          <div style="font-size:40px;margin-bottom:10px;">🤔</div>
+          Click any crop card to get AI-powered detailed advice<br>
+          <small style="font-family:'Tiro Devanagari Hindi',serif">किसी भी फसल पर क्लिक करें विस्तृत जानकारी के लिए</small>
+        </div>
+
+        <div class="reco-grid">
+          <!-- Rabi Crops -->
+          <div class="reco-card" onclick="askAboutCrop('Wheat (गेहूं)')">
+            <div class="reco-card-header"><span class="reco-icon">🌾</span><div><div class="reco-card-title" style="font-size:14px;font-weight:700;color:var(--green-dark)">Wheat</div><div class="reco-card-hindi" style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">गेहूं</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">❄️ Rabi</span>
+              <span class="meta-tag meta-soil">Clay/Loam</span>
+              <span class="meta-tag meta-yield">High Yield</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Suitability: 85%</div>
+          </div>
+
+          <div class="reco-card" onclick="askAboutCrop('Rice/Paddy (धान)')">
+            <div class="reco-card-header"><span class="reco-icon">🌾</span><div><div class="reco-card-title" style="font-size:14px;font-weight:700;color:var(--green-dark)">Rice / Paddy</div><div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">धान</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">🌧️ Kharif</span>
+              <span class="meta-tag meta-soil">Clay/Wet</span>
+              <span class="meta-tag meta-yield">High Yield</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Suitability: 80%</div>
+          </div>
+
+          <div class="reco-card" onclick="askAboutCrop('Soybean (सोयाबीन)')">
+            <div class="reco-card-header"><span class="reco-icon">🫘</span><div><div style="font-size:14px;font-weight:700;color:var(--green-dark)">Soybean</div><div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">सोयाबीन</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">🌧️ Kharif</span>
+              <span class="meta-tag meta-soil">Black Soil</span>
+              <span class="meta-tag meta-yield">Good Yield</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">MP Specialty: 90%</div>
+          </div>
+
+          <div class="reco-card" onclick="askAboutCrop('Chickpea/Gram (चना)')">
+            <div class="reco-card-header"><span class="reco-icon">🫘</span><div><div style="font-size:14px;font-weight:700;color:var(--green-dark)">Chickpea</div><div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">चना</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">❄️ Rabi</span>
+              <span class="meta-tag meta-soil">Light Soil</span>
+              <span class="meta-tag meta-yield">Moderate</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Suitability: 75%</div>
+          </div>
+
+          <div class="reco-card" onclick="askAboutCrop('Mustard (सरसों)')">
+            <div class="reco-card-header"><span class="reco-icon">🌻</span><div><div style="font-size:14px;font-weight:700;color:var(--green-dark)">Mustard</div><div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">सरसों</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">❄️ Rabi</span>
+              <span class="meta-tag meta-soil">Sandy Loam</span>
+              <span class="meta-tag meta-yield">Good Oil</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Suitability: 78%</div>
+          </div>
+
+          <div class="reco-card" onclick="askAboutCrop('Maize/Corn (मक्का)')">
+            <div class="reco-card-header"><span class="reco-icon">🌽</span><div><div style="font-size:14px;font-weight:700;color:var(--green-dark)">Maize / Corn</div><div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">मक्का</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">🌧️ Kharif</span>
+              <span class="meta-tag meta-soil">Well-drained</span>
+              <span class="meta-tag meta-yield">High Yield</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:82%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Suitability: 82%</div>
+          </div>
+
+          <div class="reco-card" onclick="askAboutCrop('Tomato (टमाटर)')">
+            <div class="reco-card-header"><span class="reco-icon">🍅</span><div><div style="font-size:14px;font-weight:700;color:var(--green-dark)">Tomato</div><div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">टमाटर</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">☀️ All Season</span>
+              <span class="meta-tag meta-soil">Loamy</span>
+              <span class="meta-tag meta-yield">High Value</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:88%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Market Value: 88%</div>
+          </div>
+
+          <div class="reco-card" onclick="askAboutCrop('Sugarcane (गन्ना)')">
+            <div class="reco-card-header"><span class="reco-icon">🎋</span><div><div style="font-size:14px;font-weight:700;color:var(--green-dark)">Sugarcane</div><div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted)">गन्ना</div></div></div>
+            <div class="reco-meta">
+              <span class="meta-tag meta-season">🌿 Perennial</span>
+              <span class="meta-tag meta-soil">Clay Loam</span>
+              <span class="meta-tag meta-yield">Very High</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Suitability: 70%</div>
+          </div>
+        </div>
+
+        <div id="recoAiResponse" style="display:none;background:white;border-radius:14px;padding:20px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">🤖 AI Analysis / AI विश्लेषण</div>
+          <div id="recoAiText" style="font-size:13.5px;line-height:1.8;color:var(--text-dark);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DISEASE GUIDE PANEL ── -->
+    <div class="panel" id="panel-disease">
+      <div class="messages reco-panel">
+        <div class="section-title">🔬 Disease Guide <span class="hindi">/ रोग मार्गदर्शिका</span></div>
+
+        <div class="disease-section">
+          <h2>🌿 Plant Diseases / पौधों के रोग</h2>
+          <div class="disease-card plant" onclick="askDisease('Wheat Rust (गेहूं का रतुआ)')">
+            <div class="disease-badge plant">PLANT</div>
+            <div class="disease-info">
+              <h4>Wheat Rust / गेहूं का रतुआ</h4>
+              <div class="hindi">गेहूं का रतुआ रोग</div>
+              <p>Orange-brown pustules on leaves. Spreads rapidly in humid conditions.</p>
+            </div>
+          </div>
+          <div class="disease-card plant" onclick="askDisease('Rice Blast (धान का झुलसा)')">
+            <div class="disease-badge plant">PLANT</div>
+            <div class="disease-info">
+              <h4>Rice Blast / धान का झुलसा</h4>
+              <div class="hindi">धान का झुलसा रोग</div>
+              <p>Diamond-shaped spots on leaves. Major paddy disease in MP.</p>
+            </div>
+          </div>
+          <div class="disease-card plant" onclick="askDisease('Early Blight of Tomato (टमाटर का अगेती झुलसा)')">
+            <div class="disease-badge plant">PLANT</div>
+            <div class="disease-info">
+              <h4>Tomato Early Blight</h4>
+              <div class="hindi">टमाटर का अगेती झुलसा</div>
+              <p>Brown concentric rings on lower leaves. Caused by Alternaria fungus.</p>
+            </div>
+          </div>
+          <div class="disease-card plant" onclick="askDisease('Soybean Yellow Mosaic Virus (सोयाबीन पीला मोजेक)')">
+            <div class="disease-badge plant">PLANT</div>
+            <div class="disease-info">
+              <h4>Soybean Yellow Mosaic</h4>
+              <div class="hindi">सोयाबीन पीला मोजेक वायरस</div>
+              <p>Yellow mosaic pattern on leaves. Spread by whiteflies. Common in MP.</p>
+            </div>
+          </div>
+          <div class="disease-card plant" onclick="askDisease('Powdery Mildew (चूर्णिल आसिता)')">
+            <div class="disease-badge plant">PLANT</div>
+            <div class="disease-info">
+              <h4>Powdery Mildew / चूर्णिल आसिता</h4>
+              <div class="hindi">चूर्णिल फफूंदी रोग</div>
+              <p>White powdery coating on leaves. Affects wheat, peas, cucumbers.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="disease-section">
+          <h2>🐄 Cattle Diseases / पशु रोग</h2>
+          <div class="disease-card cattle" onclick="askDisease('Foot and Mouth Disease - FMD (खुरपका-मुँहपका)')">
+            <div class="disease-badge cattle">CATTLE</div>
+            <div class="disease-info">
+              <h4>FMD / खुरपका-मुँहपका रोग</h4>
+              <div class="hindi">खुरपका मुँहपका</div>
+              <p>Blisters on mouth & hooves. Highly contagious. Vaccinate every 6 months.</p>
+            </div>
+          </div>
+          <div class="disease-card cattle" onclick="askDisease('Black Quarter Disease (गलघोंटू-काला बाय)')">
+            <div class="disease-badge cattle">CATTLE</div>
+            <div class="disease-info">
+              <h4>Black Quarter / काला बाय</h4>
+              <div class="hindi">काला बाय रोग</div>
+              <p>Sudden swelling of muscles. Fatal if untreated. Annual vaccination needed.</p>
+            </div>
+          </div>
+          <div class="disease-card cattle" onclick="askDisease('Mastitis (थनैला रोग) in cows')">
+            <div class="disease-badge cattle">CATTLE</div>
+            <div class="disease-info">
+              <h4>Mastitis / थनैला रोग</h4>
+              <div class="hindi">थनैला रोग (दूध की थैली की सूजन)</div>
+              <p>Udder inflammation. Reduces milk production. Very common in dairy cattle.</p>
+            </div>
+          </div>
+          <div class="disease-card cattle" onclick="askDisease('Hemorrhagic Septicemia (गलघोंटू) in cattle')">
+            <div class="disease-badge cattle">CATTLE</div>
+            <div class="disease-info">
+              <h4>Hemorrhagic Septicemia</h4>
+              <div class="hindi">गलघोंटू रोग</div>
+              <p>High fever, difficulty breathing, swollen throat. Kills quickly. Vaccinate.</p>
+            </div>
+          </div>
+          <div class="disease-card cattle" onclick="askDisease('Lumpy Skin Disease (गांठदार त्वचा रोग) in cattle')">
+            <div class="disease-badge cattle">CATTLE</div>
+            <div class="disease-info">
+              <h4>Lumpy Skin Disease</h4>
+              <div class="hindi">गांठदार त्वचा रोग</div>
+              <p>Nodular lumps all over body. Spread by insects. Vaccination available.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="diseaseAiResponse" style="display:none;background:white;border-radius:14px;padding:20px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">🤖 AI Diagnosis & Treatment / निदान और उपचार</div>
+          <div id="diseaseAiText" style="font-size:13.5px;line-height:1.8;color:var(--text-dark);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SOIL PANEL ── -->
+    <div class="panel" id="panel-soil">
+      <div class="messages reco-panel">
+        <div class="section-title">🌱 Soil Fertility Advisor <span class="hindi">/ मिट्टी उर्वरता सलाहकार</span></div>
+
+        <div class="soil-card">
+          <div style="font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:14px">📊 Common MP Soil Types / मिट्टी के प्रकार</div>
+
+          <div class="soil-indicator"><span class="soil-label">Black Cotton Soil (काली मिट्टी)</span><span class="soil-value">Best for Soybean</span></div>
+          <div class="soil-bar"><div class="soil-fill" style="width:90%;background:linear-gradient(90deg,#374151,#6b7280)"></div></div>
+
+          <div class="soil-indicator"><span class="soil-label">Red Laterite Soil (लाल मिट्टी)</span><span class="soil-value">Good for Maize</span></div>
+          <div class="soil-bar"><div class="soil-fill" style="width:70%;background:linear-gradient(90deg,#dc2626,#ef4444)"></div></div>
+
+          <div class="soil-indicator"><span class="soil-label">Alluvial Soil (जलोढ़ मिट्टी)</span><span class="soil-value">Best for Wheat</span></div>
+          <div class="soil-bar"><div class="soil-fill" style="width:85%;background:linear-gradient(90deg,var(--soil),var(--soil-light))"></div></div>
+
+          <div class="soil-indicator"><span class="soil-label">Sandy Loam (बलुई दोमट)</span><span class="soil-value">Good for Mustard</span></div>
+          <div class="soil-bar"><div class="soil-fill" style="width:65%;background:linear-gradient(90deg,#d97706,#fbbf24)"></div></div>
+        </div>
+
+        <!-- Soil Quick Ask Buttons -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-dark);margin-bottom:10px">🔍 Ask AI about your soil / मिट्टी के बारे में पूछें</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="hint-btn" style="font-size:12px;padding:8px 14px" onclick="askSoil('How to improve soil pH for wheat cultivation?')">🌾 Wheat Soil pH</button>
+            <button class="hint-btn" style="font-size:12px;padding:8px 14px" onclick="askSoil('What organic manure is best to improve black cotton soil fertility?')">🌿 Black Soil Manure</button>
+            <button class="hint-btn" style="font-size:12px;padding:8px 14px" onclick="askSoil('How much NPK fertilizer should I use for 1 acre of soybean?')">💊 NPK for Soybean</button>
+            <button class="hint-btn" style="font-size:12px;padding:8px 14px" onclick="askSoil('How to do vermicompost at home for small farm?')">🪱 Vermicompost</button>
+            <button class="hint-btn" style="font-size:12px;padding:8px 14px" onclick="askSoil('What cover crops improve soil fertility naturally?')">🌱 Cover Crops</button>
+            <button class="hint-btn" style="font-size:12px;padding:8px 14px" onclick="askSoil('Signs of nutrient deficiency in crops and how to fix them')">⚠️ Deficiency Signs</button>
+          </div>
+        </div>
+
+        <div id="soilAiResponse" style="display:none;background:white;border-radius:14px;padding:20px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">🤖 AI Soil Analysis / मिट्टी विश्लेषण</div>
+          <div id="soilAiText" style="font-size:13.5px;line-height:1.8;color:var(--text-dark);"></div>
+        </div>
+
+        <div class="soil-card" style="margin-top:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-dark);margin-bottom:10px">💡 Soil Health Tips / मिट्टी स्वास्थ्य सुझाव</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--green-pale);border-radius:8px;padding:10px;font-size:12px;color:var(--green-dark)"><strong>🧪 Test Soil Every 3 Years</strong><br>हर 3 साल में मिट्टी की जांच करें</div>
+            <div style="background:var(--amber-light);border-radius:8px;padding:10px;font-size:12px;color:#92400e"><strong>🌿 Use Green Manure</strong><br>हरी खाद का उपयोग करें</div>
+            <div style="background:#dbeafe;border-radius:8px;padding:10px;font-size:12px;color:#1d4ed8"><strong>💧 Proper Irrigation</strong><br>सही मात्रा में सिंचाई करें</div>
+            <div style="background:#fce7f3;border-radius:8px;padding:10px;font-size:12px;color:#9d174d"><strong>🔄 Crop Rotation</strong><br>फसल चक्र अपनाएं</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end chat-area -->
+</div><!-- end app-body -->
+
+<script>
+// ── STATE ──
+let selectedLang = 'both';
+let selectedSeason = 'Rabi (रबी)';
+let isLoading = false;
+const messagesEl = document.getElementById('messages');
+
+// ── SYSTEM PROMPT ──
+function getSystemPrompt() {
+  const langInstr = selectedLang === 'both'
+    ? 'Always respond in BOTH English and Hindi. Give the English explanation first, then provide the Hindi translation/equivalent below it, clearly labeled "हिंदी में:" or using Hindi naturally. Use Devanagari script for Hindi.'
+    : selectedLang === 'hindi'
+    ? 'Always respond in Hindi (Devanagari script) only. Be clear and simple for farmers.'
+    : 'Always respond in English only. Be clear and simple for farmers.';
+
+  return `You are KrishiMitra AI (कृषि मित्र), an expert AI assistant for Indian farmers, especially in Madhya Pradesh. You help farmers with:
+
+1. **Crop Disease Detection**: Identify plant diseases from symptoms, suggest treatments (organic & chemical), preventive measures
+2. **Cattle/Livestock Disease**: Diagnose animal diseases from symptoms, first aid, when to call a vet, vaccination schedules
+3. **Crop Recommendations**: Suggest best crops based on season (Kharif/Rabi/Zaid), soil type, land area, water availability, market demand
+4. **Soil Fertility**: Soil health advice, fertilizer recommendations (NPK), organic farming, composting, pH management
+5. **Seasonal Guidance**: What to grow when, irrigation tips, pest management by season
+
+Current season context: ${selectedSeason}
+
+${langInstr}
+
+FORMAT YOUR RESPONSES CLEARLY:
+- Use emojis to make responses visual and easy to understand
+- Break into clear sections with headers when needed
+- Give actionable, practical advice a farmer can implement immediately
+- Mention government schemes when relevant (PM-KISAN, Kisan Credit Card, soil health card, etc.)
+- Always include emergency vet/helpline info for serious cattle diseases
+- Kisan Call Centre number: 1800-180-1551 (free)
+- Keep language simple — these are farmers, not scientists
+- For diseases, always mention: Symptoms → Cause → Treatment → Prevention
+
+Be warm, respectful, and encouraging. Address farmers as "Kisan Bhai" or "भाई" naturally.`;
+}
+
+// ══════════════════════════════════════════════
+// 🌿 RULE-BASED RECOMMENDATION ENGINE
+// Works 100% offline — no API needed
+// ══════════════════════════════════════════════
+
+const RULES = [
+
+  // ── PLANT DISEASE SYMPTOMS ──
+  {
+    keywords: ['yellow','yellowing','pale','पीली','पीले','पीलापन','yellow leaf','yellow leaves'],
+    exclude: [],
+    category: 'plant',
+    response: {
+      title: '🍂 Yellow Leaves Detected / पत्तियां पीली हो रही हैं',
+      causes: [
+        '🔬 Nitrogen Deficiency (नाइट्रोजन की कमी) — Most common cause',
+        '🦠 Mosaic Virus (मोजेक वायरस) — spread by insects',
+        '🍄 Fungal infection / फफूंद रोग',
+        '💧 Overwatering or waterlogging / अधिक पानी'
+      ],
+      treatments: [
+        { type: 'fertilizer', icon: '💊', text: 'Apply Urea @ 20 kg/acre OR Ammonium Sulphate @ 40 kg/acre', hindi: 'यूरिया 20 किग्रा/एकड़ डालें — नाइट्रोजन के लिए' },
+        { type: 'spray', icon: '🧪', text: 'Spray Ferrous Sulphate (FeSO₄) 0.5% if iron deficiency', hindi: 'फेरस सल्फेट 0.5% का छिड़काव करें' },
+        { type: 'organic', icon: '🌿', text: 'Apply well-decomposed cow dung manure @ 2 tons/acre', hindi: 'सड़ी हुई गोबर खाद 2 टन/एकड़ डालें' },
+        { type: 'insecticide', icon: '🚿', text: 'If virus suspected: Spray Imidacloprid 0.3ml/L to kill whiteflies', hindi: 'इमिडाक्लोप्रिड 0.3ml/L — सफेद मक्खी के लिए' }
+      ],
+      prevention: 'Do soil testing every 3 years. Use balanced NPK 12:32:16 at sowing time.\nमिट्टी परीक्षण करें और NPK 12:32:16 का उपयोग करें।',
+      severity: 'medium',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['brown spot','brown patch','brown leaves','भूरे धब्बे','भूरा','brown','dark spots','काले धब्बे'],
+    category: 'plant',
+    response: {
+      title: '🟤 Brown / Dark Spots on Leaves / भूरे-काले धब्बे',
+      causes: [
+        '🍄 Fungal Blight (झुलसा रोग) — Alternaria or Helminthosporium',
+        '🦠 Bacterial Leaf Spot (जीवाणु पर्ण धब्बा)',
+        '🌧️ Excess humidity / अधिक नमी',
+        '🌡️ Heat stress / गर्मी का तनाव'
+      ],
+      treatments: [
+        { type: 'fungicide', icon: '🧪', text: 'Spray Mancozeb 75WP @ 2.5g/L water — highly effective for blight', hindi: 'मैंकोज़ेब 75WP 2.5 ग्राम प्रति लीटर पानी में मिलाकर छिड़काव करें' },
+        { type: 'fungicide', icon: '💉', text: 'For severe cases: Carbendazim 50WP @ 1g/L water', hindi: 'गंभीर संक्रमण के लिए कार्बेंडाजिम 50WP 1 ग्राम/लीटर' },
+        { type: 'organic', icon: '🌿', text: 'Spray Neem oil 5ml/L + 2ml liquid soap as organic option', hindi: 'नीम का तेल 5ml/लीटर पानी में मिलाकर छिड़काव करें' },
+        { type: 'action', icon: '✂️', text: 'Remove and burn infected leaves immediately', hindi: 'संक्रमित पत्तियां तुरंत हटाकर जला दें' }
+      ],
+      prevention: 'Avoid overhead irrigation. Spray preventive fungicide every 15 days in monsoon.\nऊपर से सिंचाई न करें। मानसून में 15 दिन में एक बार फफूंदनाशक का छिड़काव करें।',
+      severity: 'high',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['white powder','white coating','safed','सफेद चूर्ण','powdery','white dust','white film'],
+    category: 'plant',
+    response: {
+      title: '⬜ Powdery White Coating / सफेद चूर्णिल लेप',
+      causes: [
+        '🍄 Powdery Mildew (चूर्णिल आसिता) — Fungal disease',
+        '🌬️ Dry weather with cool nights',
+        '🌿 Affects wheat, peas, cucumbers, grapes'
+      ],
+      treatments: [
+        { type: 'fungicide', icon: '🧪', text: 'Spray Sulphur 80WP (घुलनशील गंधक) @ 3g/L water — Best remedy', hindi: 'घुलनशील गंधक 3 ग्राम प्रति लीटर पानी में छिड़काव करें' },
+        { type: 'fungicide', icon: '💊', text: 'Propiconazole 25EC @ 1ml/L water for systemic control', hindi: 'प्रोपिकोनाज़ोल 1ml/लीटर पानी' },
+        { type: 'organic', icon: '🌿', text: 'Mix 1 tbsp baking soda + 1 tsp neem oil in 1L water, spray weekly', hindi: 'बेकिंग सोडा + नीम तेल का घोल — जैविक उपाय' }
+      ],
+      prevention: 'Ensure proper spacing between plants for air circulation. Avoid excess nitrogen.\nपौधों के बीच उचित दूरी रखें। अधिक नाइट्रोजन न डालें।',
+      severity: 'medium',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['wilting','drooping','falling','मुरझाना','सूखना','wilt','dying','sukh raha','सूख रहा'],
+    category: 'plant',
+    response: {
+      title: '😓 Plant Wilting / Dying — पौधा मुरझा रहा है',
+      causes: [
+        '🍄 Fusarium / Verticillium Wilt (उकठा रोग)',
+        '💧 Root rot due to waterlogging (जड़ सड़न)',
+        '🌡️ Heat / drought stress',
+        '🐛 Root grub or termite attack (दीमक)'
+      ],
+      treatments: [
+        { type: 'fungicide', icon: '💧', text: 'Drench soil with Carbendazim 2g/L at base of plant', hindi: 'पौधे की जड़ के पास कार्बेंडाजिम 2g/लीटर से सिंचाई करें' },
+        { type: 'insecticide', icon: '🐛', text: 'For termites: Mix Chlorpyrifos 2ml/L in irrigation water', hindi: 'दीमक के लिए क्लोरपाइरीफॉस 2ml/लीटर सिंचाई जल में मिलाएं' },
+        { type: 'action', icon: '🌱', text: 'Improve drainage. Remove standing water immediately', hindi: 'जल निकासी ठीक करें। रुका हुआ पानी तुरंत हटाएं' },
+        { type: 'organic', icon: '🌿', text: 'Apply Trichoderma viride 2.5kg/acre mixed with compost — prevents root disease', hindi: 'ट्राइकोडर्मा विरिडे 2.5 किग्रा/एकड़ — जड़ रोग से बचाव' }
+      ],
+      prevention: 'Use disease-resistant seed varieties. Treat seeds with fungicide before sowing.\nरोगरोधी बीज लें। बुआई से पहले बीजोपचार करें।',
+      severity: 'high',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['insect','pest','bug','कीड़े','कीट','locust','टिड्डी','aphid','mite','caterpillar','इल्ली','सुंडी'],
+    category: 'plant',
+    response: {
+      title: '🐛 Insect / Pest Attack — कीट आक्रमण',
+      causes: [
+        '🌡️ Hot dry weather promotes pest multiplication',
+        '🌿 Monoculture without crop rotation',
+        '💧 Moisture stress weakens plant immunity'
+      ],
+      treatments: [
+        { type: 'insecticide', icon: '🧪', text: 'Spray Imidacloprid 17.8SL @ 0.5ml/L — for sucking pests (aphids, whitefly)', hindi: 'इमिडाक्लोप्रिड 0.5ml/लीटर — रस चूसने वाले कीटों के लिए' },
+        { type: 'insecticide', icon: '💊', text: 'Chlorpyrifos 20EC @ 2ml/L — for caterpillars and borers', hindi: 'क्लोरपाइरीफॉस 2ml/लीटर — इल्ली और बेधक के लिए' },
+        { type: 'organic', icon: '🌿', text: 'Neem-based pesticide (Nimbecidine) @ 5ml/L — safe & organic', hindi: 'नीम आधारित कीटनाशक 5ml/लीटर — जैविक और सुरक्षित' },
+        { type: 'trap', icon: '🪤', text: 'Set up yellow sticky traps @ 8-10 per acre for monitoring', hindi: 'पीले चिपकने वाले जाल 8-10 प्रति एकड़ लगाएं' }
+      ],
+      prevention: 'Follow Integrated Pest Management (IPM). Spray in early morning or evening only.\nएकीकृत कीट प्रबंधन अपनाएं। छिड़काव सुबह या शाम को करें।',
+      severity: 'high',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['rust','orange spots','orange powder','रतुआ','ржавчина','orange','rusting'],
+    category: 'plant',
+    response: {
+      title: '🟠 Rust Disease — रतुआ रोग',
+      causes: [
+        '🍄 Puccinia fungus — Wheat rust, Soybean rust',
+        '🌬️ Spread by wind in cool humid weather (10–20°C)',
+        '⚠️ Can destroy 40–70% of crop if untreated'
+      ],
+      treatments: [
+        { type: 'fungicide', icon: '🧪', text: 'Spray Propiconazole 25EC @ 1ml/L IMMEDIATELY — most effective', hindi: 'प्रोपिकोनाज़ोल 1ml/लीटर — तुरंत छिड़काव करें' },
+        { type: 'fungicide', icon: '💊', text: 'Tebuconazole 250EW @ 1ml/L — systemic, long lasting', hindi: 'टेबुकोनाज़ोल 1ml/लीटर — प्रणालीगत फफूंदनाशक' },
+        { type: 'action', icon: '✂️', text: 'Remove heavily infected plant parts. Do NOT compost them', hindi: 'अधिक संक्रमित भाग हटाएं। खाद में न डालें' }
+      ],
+      prevention: 'Use rust-resistant wheat varieties like HD-2967, GW-322. Spray preventive fungicide at flag leaf stage.\nHD-2967, GW-322 जैसी प्रतिरोधी गेहूं किस्म उगाएं।',
+      severity: 'critical',
+      helpline: false
+    }
+  },
+
+  // ── CATTLE / ANIMAL DISEASES ──
+  {
+    keywords: ['cow fever','cattle fever','animal fever','गाय बुखार','पशु बुखार','buffalo fever','बुखार','fever','तेज बुखार','high temperature'],
+    category: 'cattle',
+    response: {
+      title: '🌡️ Animal Fever — पशु को बुखार',
+      causes: [
+        '🦠 Viral infection (FMD, BQ, HS)',
+        '🦠 Bacterial infection',
+        '🌡️ Heat stroke in summer',
+        '🐛 Tick-borne disease (Theileria)'
+      ],
+      treatments: [
+        { type: 'medicine', icon: '💊', text: 'Give Meloxicam or Paracetamol injection — consult vet for dose', hindi: 'पशु चिकित्सक से मेलोक्सिकैम या पेरासिटामोल इंजेक्शन लें' },
+        { type: 'action', icon: '💧', text: 'Keep animal in shade. Provide cold clean water frequently', hindi: 'पशु को छाया में रखें। ठंडा साफ पानी बार-बार दें' },
+        { type: 'action', icon: '🧊', text: 'Apply cold water cloth on forehead and neck to reduce fever', hindi: 'माथे और गर्दन पर ठंडे पानी की पट्टी रखें' },
+        { type: 'urgent', icon: '🚨', text: 'If fever > 104°F or lasts > 2 days — CALL VET IMMEDIATELY', hindi: 'बुखार 104°F से ज्यादा या 2 दिन से अधिक हो तो तुरंत पशु चिकित्सक बुलाएं' }
+      ],
+      prevention: 'Annual vaccination for FMD, BQ, HS. Deworm every 6 months.\nFMD, BQ, HS का वार्षिक टीकाकरण। हर 6 माह में कृमिनाशक दवा।',
+      severity: 'high',
+      helpline: true
+    }
+  },
+
+  {
+    keywords: ['mouth ulcer','blisters','khurpaka','खुरपका','मुँहपका','fmd','foot mouth','छाले','मुंह में घाव','limping','lame','लंगड़ा'],
+    category: 'cattle',
+    response: {
+      title: '🐄 FMD — खुरपका-मुँहपका रोग',
+      causes: [
+        '🦠 Foot and Mouth Disease Virus (FMDV)',
+        '⚡ Highly contagious — spreads through contact, air, water',
+        '📍 Very common in MP, UP, Rajasthan'
+      ],
+      treatments: [
+        { type: 'medicine', icon: '🧴', text: 'Clean mouth ulcers with Potassium Permanganate (KMnO₄) solution', hindi: 'मुंह के छालों को पोटेशियम परमैंगनेट के घोल से साफ करें' },
+        { type: 'medicine', icon: '💊', text: 'Apply Glycerin + Borax powder on mouth ulcers 3x daily', hindi: 'ग्लिसरीन + बोरेक्स पाउडर छालों पर दिन में 3 बार लगाएं' },
+        { type: 'medicine', icon: '🧪', text: 'Antibiotic injection (Oxytetracycline) to prevent secondary infection', hindi: 'द्वितीयक संक्रमण से बचाव के लिए ऑक्सीटेट्रासाइक्लिन इंजेक्शन' },
+        { type: 'urgent', icon: '🔒', text: 'ISOLATE the animal immediately! Separate from all other animals', hindi: '⚠️ पशु को तुरंत अलग कर दें! अन्य पशुओं से दूर रखें' }
+      ],
+      prevention: '💉 Vaccinate every 6 months — FMD vaccine is FREE at govt. vet centers.\nहर 6 माह में FMD का टीका लगवाएं — सरकारी पशु चिकित्सा केंद्र में मुफ्त।',
+      severity: 'critical',
+      helpline: true
+    }
+  },
+
+  {
+    keywords: ['not eating','not drinking','खाना नहीं खा रहा','पानी नहीं पी रहा','loss of appetite','भूख नहीं','dull','lazy','सुस्त'],
+    category: 'cattle',
+    response: {
+      title: '😔 Animal Not Eating / Dull — पशु खाना नहीं खा रहा',
+      causes: [
+        '🦠 Infection or fever (most common)',
+        '🌿 Digestive problem / bloating (अफारा)',
+        '😰 Stress or change in feed',
+        '🦷 Tooth pain or mouth injury'
+      ],
+      treatments: [
+        { type: 'action', icon: '🌡️', text: 'Check temperature first (normal: 101–102.5°F). If high → fever treatment', hindi: 'पहले तापमान जांचें (सामान्य: 101-102.5°F)। अधिक हो तो बुखार का इलाज करें' },
+        { type: 'medicine', icon: '🌿', text: 'For bloating (अफारा): Give turpentine oil 30ml + Linseed oil 250ml orally', hindi: 'अफारे के लिए: तारपीन का तेल 30ml + अलसी का तेल 250ml पिलाएं' },
+        { type: 'medicine', icon: '💊', text: 'Digestive tonic: Yeast powder or Liver tonic from vet pharmacy', hindi: 'पाचन टॉनिक: यीस्ट पाउडर या लिवर टॉनिक दें' },
+        { type: 'action', icon: '🥗', text: 'Offer fresh green grass, jaggery (गुड़), and rock salt to tempt eating', hindi: 'हरा चारा, गुड़ और सेंधा नमक खिलाने की कोशिश करें' }
+      ],
+      prevention: 'Feed balanced diet with green fodder, dry fodder, mineral mixture daily.\nहरा चारा, सूखा चारा और खनिज मिश्रण का संतुलित आहार दें।',
+      severity: 'medium',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['milk reduced','less milk','दूध कम','थनैला','mastitis','udder','swollen udder','थन में सूजन','udder pain'],
+    category: 'cattle',
+    response: {
+      title: '🥛 Mastitis / Reduced Milk — थनैला रोग',
+      causes: [
+        '🦠 Bacterial infection (Staphylococcus, Streptococcus)',
+        '🧹 Unhygienic milking practices',
+        '🐄 Incomplete milking leaves bacteria',
+        '🤕 Udder injury'
+      ],
+      treatments: [
+        { type: 'medicine', icon: '💉', text: 'Intra-mammary antibiotic tubes (Cloxacillin) — insert after milking', hindi: 'थन में क्लॉक्सासिलिन एंटीबायोटिक ट्यूब डालें — दूध निकालने के बाद' },
+        { type: 'medicine', icon: '💊', text: 'Systemic antibiotic injection — consult vet for Pen-Strep or Oxytet', hindi: 'पशु चिकित्सक से पेन-स्ट्रेप इंजेक्शन लगवाएं' },
+        { type: 'action', icon: '🧹', text: 'Strip milk 4x daily from affected quarter. Apply warm compress', hindi: 'प्रभावित थन का दूध दिन में 4 बार निकालें। गर्म सेंक करें' },
+        { type: 'action', icon: '🧴', text: 'Dip teats in iodine solution after every milking', hindi: 'दूध निकालने के बाद थनों को आयोडीन घोल में डुबोएं' }
+      ],
+      prevention: 'Keep shed clean and dry. Use proper milking technique. Dry cow therapy before drying off.\nबाड़ा साफ और सूखा रखें। सही तरीके से दूध दुहें।',
+      severity: 'high',
+      helpline: false
+    }
+  },
+
+  // ── SOIL & FERTILIZER ──
+  {
+    keywords: ['soil test','मिट्टी जांच','soil ph','ph test','मिट्टी परीक्षण','soil fertility','मिट्टी उर्वरता'],
+    category: 'soil',
+    response: {
+      title: '🧪 Soil Testing Guide — मिट्टी परीक्षण',
+      causes: ['📊 Understanding soil health is key to good yield'],
+      treatments: [
+        { type: 'action', icon: '🏛️', text: 'Visit nearest Krishi Vigyan Kendra (KVK) for FREE soil testing', hindi: 'नजदीकी कृषि विज्ञान केंद्र (KVK) में मुफ्त मिट्टी जांच कराएं' },
+        { type: 'action', icon: '📱', text: 'Apply for Soil Health Card at msoil.dac.gov.in or village CSC center', hindi: 'मृदा स्वास्थ्य कार्ड के लिए msoil.dac.gov.in पर आवेदन करें' },
+        { type: 'action', icon: '🧪', text: 'Home pH test: Mix soil + water (1:2), dip pH strip. Buy from agri shop ₹50', hindi: 'घर पर: मिट्टी + पानी (1:2) मिलाएं, pH पट्टी डालें। ₹50 में मिलती है' },
+        { type: 'info', icon: '📊', text: 'Ideal pH: 6.0–7.5 for most crops. Below 6 = add lime. Above 7.5 = add gypsum', hindi: 'अधिकांश फसलों के लिए आदर्श pH: 6.0–7.5' }
+      ],
+      prevention: 'Test soil every 3 years. Apply fertilizers based on test results only.\nहर 3 साल में मिट्टी की जांच कराएं।',
+      severity: 'info',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['fertilizer','urea','npk','खाद','उर्वरक','dap','nitrogen','नाइट्रोजन','potassium','phosphorus','manure'],
+    category: 'soil',
+    response: {
+      title: '💊 Fertilizer Recommendations — उर्वरक सिफारिश',
+      causes: ['🌾 Crops need NPK (Nitrogen, Phosphorus, Potassium) for healthy growth'],
+      treatments: [
+        { type: 'fertilizer', icon: '🌾', text: 'WHEAT (गेहूं): Urea 130kg + DAP 75kg + MOP 40kg per acre', hindi: 'गेहूं: यूरिया 130 किग्रा + DAP 75 किग्रा + MOP 40 किग्रा प्रति एकड़' },
+        { type: 'fertilizer', icon: '🌾', text: 'RICE (धान): Urea 100kg + DAP 50kg + Zinc Sulphate 10kg per acre', hindi: 'धान: यूरिया 100 किग्रा + DAP 50 किग्रा + जिंक सल्फेट 10 किग्रा' },
+        { type: 'fertilizer', icon: '🫘', text: 'SOYBEAN (सोयाबीन): DAP 75kg + MOP 30kg (No urea — fixes own nitrogen)', hindi: 'सोयाबीन: DAP 75 किग्रा + MOP 30 किग्रा (यूरिया नहीं — स्वयं नाइट्रोजन बनाती है)' },
+        { type: 'organic', icon: '🌿', text: 'Add Vermicompost 200–400kg/acre for all crops — improves soil structure', hindi: 'सभी फसलों में वर्मीकम्पोस्ट 200-400 किग्रा/एकड़ डालें' }
+      ],
+      prevention: 'Split urea into 2 doses: 50% at sowing, 50% at first irrigation.\nयूरिया को 2 भागों में दें: 50% बुआई पर, 50% पहली सिंचाई पर।',
+      severity: 'info',
+      helpline: false
+    }
+  },
+
+  // ── SEASON / CROP RECOMMENDATIONS ──
+  {
+    keywords: ['kharif','खरीफ','monsoon','बारिश','rainy season','june','july','जून','जुलाई','sawan','सावन'],
+    category: 'crop',
+    response: {
+      title: '🌧️ Kharif Crop Recommendations — खरीफ फसल सुझाव',
+      causes: ['📅 Kharif season: June–October | बुआई: जून-जुलाई | कटाई: अक्टूबर'],
+      treatments: [
+        { type: 'crop', icon: '🌾', text: 'SOYBEAN — Best for MP black soil. 15–20 quintal/acre. MSP guaranteed', hindi: 'सोयाबीन — MP की काली मिट्टी के लिए सर्वोत्तम। 15-20 क्विंटल/एकड़' },
+        { type: 'crop', icon: '🌾', text: 'PADDY (धान) — For clay/wet soil. High water need. 20–25 quintal/acre', hindi: 'धान — चिकनी/नम मिट्टी के लिए। 20-25 क्विंटल/एकड़' },
+        { type: 'crop', icon: '🌽', text: 'MAIZE (मक्का) — Quick 90 days. Good for dry areas. 25–30 quintal/acre', hindi: 'मक्का — 90 दिन में तैयार। सूखे क्षेत्रों के लिए। 25-30 क्विंटल/एकड़' },
+        { type: 'crop', icon: '🌻', text: 'GROUNDNUT (मूंगफली) — Sandy soil. Good market price. 8–12 quintal/acre', hindi: 'मूंगफली — बलुई मिट्टी में। अच्छा बाजार भाव। 8-12 क्विंटल/एकड़' }
+      ],
+      prevention: 'Treat seeds with Thiram + Carbendazim before sowing. Apply Rhizobium culture for soybean.\nबुआई से पहले बीजोपचार करें। सोयाबीन के लिए राइज़ोबियम कल्चर लगाएं।',
+      severity: 'info',
+      helpline: false
+    }
+  },
+
+  {
+    keywords: ['rabi','रबी','winter crop','सर्दी','winter','ठंड','october','november','december','अक्टूबर','नवंबर','दिसंबर'],
+    category: 'crop',
+    response: {
+      title: '❄️ Rabi Crop Recommendations — रबी फसल सुझाव',
+      causes: ['📅 Rabi season: October–March | बुआई: अक्टूबर-नवंबर | कटाई: मार्च-अप्रैल'],
+      treatments: [
+        { type: 'crop', icon: '🌾', text: 'WHEAT (गेहूं) — King of Rabi. Best for alluvial soil. 20–25 quintal/acre', hindi: 'गेहूं — रबी की मुख्य फसल। जलोढ़ मिट्टी के लिए। 20-25 क्विंटल/एकड़' },
+        { type: 'crop', icon: '🫘', text: 'CHICKPEA/GRAM (चना) — Drought tolerant. Improves soil nitrogen. 8–12 q/acre', hindi: 'चना — सूखा सहनशील। मिट्टी में नाइट्रोजन बढ़ाता है। 8-12 क्विंटल/एकड़' },
+        { type: 'crop', icon: '🌻', text: 'MUSTARD (सरसों) — Sandy loam soil. Low water. Oil crop. 6–10 quintal/acre', hindi: 'सरसों — बलुई दोमट मिट्टी। कम पानी। 6-10 क्विंटल/एकड़' },
+        { type: 'crop', icon: '🧅', text: 'ONION/GARLIC (प्याज/लहसुन) — High market value. Good for small farmers', hindi: 'प्याज/लहसुन — अच्छा बाजार भाव। छोटे किसानों के लिए उपयुक्त' }
+      ],
+      prevention: 'Sow wheat before Nov 25 for best yield. Late sowing reduces yield by 1% per day.\nगेहूं की बुआई 25 नवंबर से पहले करें। देर से बुआई प्रति दिन 1% उत्पादन कम करती है।',
+      severity: 'info',
+      helpline: false
+    }
+  }
+];
+
+// ── RULE ENGINE: MATCH USER MESSAGE ──
+function matchRule(msg) {
+  const lower = msg.toLowerCase();
+  // Score each rule by how many keywords match
+  let best = null;
+  let bestScore = 0;
+
+  for (const rule of RULES) {
+    let score = 0;
+    for (const kw of rule.keywords) {
+      if (lower.includes(kw.toLowerCase())) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = rule;
+    }
+  }
+  return bestScore >= 1 ? best : null;
+}
+
+// ── BUILD RULE RESPONSE HTML ──
+function buildRuleHTML(rule) {
+  const r = rule.response;
+  const severityColor = {
+    critical: '#dc2626', high: '#ea580c',
+    medium: '#d97706', info: '#2d6a38'
+  }[r.severity] || '#2d6a38';
+
+  const severityLabel = {
+    critical: '🚨 Critical / गंभीर',
+    high: '⚠️ High / उच्च',
+    medium: '🔶 Moderate / मध्यम',
+    info: 'ℹ️ Info / जानकारी'
+  }[r.severity] || '';
+
+  const typeColors = {
+    fungicide: '#7c3aed', insecticide: '#dc2626', fertilizer: '#0369a1',
+    organic: '#15803d', medicine: '#0891b2', action: '#374151',
+    crop: '#16a34a', urgent: '#dc2626', info: '#374151', spray: '#7c3aed', trap: '#92400e'
+  };
+
+  let html = `
+    <div style="border-left:3px solid ${severityColor};padding-left:12px;margin-bottom:10px">
+      <div style="font-size:15px;font-weight:800;color:var(--green-dark);margin-bottom:4px">${r.title}</div>
+      <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${severityColor}20;color:${severityColor}">${severityLabel}</span>
+    </div>`;
+
+  if (r.causes && r.causes.length) {
+    html += `<div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">📌 Possible Causes / संभावित कारण</div>`;
+    r.causes.forEach(c => { html += `<div style="font-size:12.5px;color:var(--text-dark);margin-bottom:3px">${c}</div>`; });
+    html += `</div>`;
+  }
+
+  html += `<div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">💊 Treatment / उपचार</div>`;
+  r.treatments.forEach(t => {
+    const col = typeColors[t.type] || '#374151';
+    html += `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-bottom:8px;border-left:3px solid ${col}">
+      <div style="font-size:13px;color:var(--text-dark);font-weight:500">${t.icon} ${t.text}</div>
+      <div style="font-family:'Tiro Devanagari Hindi',serif;font-size:12px;color:var(--text-muted);margin-top:4px">${t.hindi}</div>
+    </div>`;
+  });
+
+  if (r.prevention) {
+    html += `<div style="background:var(--amber-light);border-radius:8px;padding:10px;margin-top:8px">
+      <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">🛡️ Prevention / रोकथाम</div>
+      <div style="font-size:12.5px;color:#78350f">${r.prevention.replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }
+
+  if (r.helpline) {
+    html += `<div style="background:#fee2e2;border-radius:8px;padding:10px;margin-top:10px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:20px">📞</span>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#dc2626">Emergency Helpline / आपातकालीन हेल्पलाइन</div>
+        <div style="font-size:13px;font-weight:800;color:#991b1b">Kisan Call Centre: 1800-180-1551 (Free / मुफ्त)</div>
+      </div>
+    </div>`;
+  }
+
+  html += `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px;color:var(--text-muted)">
+    💡 <em>This is a rule-based suggestion. For serious cases, always consult your local Krishi Sevak or Veterinary Officer.<br>
+    यह एक नियम-आधारित सुझाव है। गंभीर मामलों में स्थानीय कृषि सेवक या पशु चिकित्सक से मिलें।</em>
+  </div>`;
+
+  return html;
+}
+
+// ── API CALL ──
+async function callClaude(userMessage, targetEl, loadingText = '') {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: getSystemPrompt(),
+      messages: [{ role: 'user', content: userMessage }]
+    })
+  });
+  const data = await res.json();
+  const text = data.content?.map(b => b.text || '').join('') || 'Sorry, could not get a response. Please try again.';
+  return text;
+}
+
+// ── CHAT CONVERSATION HISTORY ──
+let chatHistory = [];
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const msg = input.value.trim();
+  if (!msg || isLoading) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  appendUserMsg(msg);
+  input.focus();
+  await fetchAiReply(msg);
+}
+
+function appendUserMsg(text) {
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `
+    <div class="avatar avatar-user">👤</div>
+    <div class="bubble bubble-user">${escapeHtml(text)}</div>`;
+  messagesEl.appendChild(div);
+  scrollBottom();
+}
+
+function appendAiMsg(html) {
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.innerHTML = `
+    <div class="avatar avatar-ai">🌿</div>
+    <div class="bubble bubble-ai">${html}</div>`;
+  messagesEl.appendChild(div);
+  scrollBottom();
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="avatar avatar-ai">🌿</div>
+    <div class="bubble bubble-ai"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  messagesEl.appendChild(div);
+  scrollBottom();
+}
+
+function removeTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+async function fetchAiReply(userMsg) {
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  // ── STEP 1: Rule-based engine first ──
+  const rule = matchRule(userMsg);
+  if (rule) {
+    await new Promise(r => setTimeout(r, 600));
+    removeTyping();
+    const badge = `<div style="display:inline-flex;align-items:center;gap:5px;background:#dcfce7;border:1px solid #86efac;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:#15803d;margin-bottom:8px">⚡ Instant Answer · Rule-Based / नियम-आधारित जवाब</div><br>`;
+    appendAiMsg(badge + buildRuleHTML(rule));
+    chatHistory.push({ role: 'user', content: userMsg });
+    chatHistory.push({ role: 'assistant', content: '[Rule answer: ' + rule.response.title + ']' });
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+    return;
+  }
+
+  // ── STEP 2: Fallback to Claude AI ──
+  try {
+    chatHistory.push({ role: 'user', content: userMsg });
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: getSystemPrompt(),
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(b => b.text || '').join('') || 'Sorry, could not get a response.';
+    chatHistory.push({ role: 'assistant', content: text });
+    removeTyping();
+    appendAiMsg(formatResponse(text));
+  } catch(e) {
+    removeTyping();
+    appendAiMsg(`<div style="background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:12px">
+      <div style="font-weight:700;color:#854d0e;margin-bottom:6px">⚠️ AI offline — Rule-based answers still work!</div>
+      <div style="font-size:12.5px;color:#713f12">Try asking about: yellow leaves, brown spots, cow fever, FMD, fertilizer, kharif crops etc.<br>
+      पूछें: पत्तियां पीली, भूरे धब्बे, गाय बुखार, खुरपका, खाद, खरीफ फसल</div>
+      <div style="margin-top:8px;font-size:12.5px">📞 <strong>Kisan Call Centre: 1800-180-1551</strong> (Free, 24/7)</div>
+    </div>`);
+  }
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+// ── FORMAT AI RESPONSE ──
+function formatResponse(text) {
+  // Convert markdown-like formatting to HTML
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^(.*)$/gm, '$1')
+    .replace(/#{1,3} (.*)/g, '<br><strong style="font-size:14px;color:var(--green-dark)">$1</strong><br>');
+}
+
+// ── QUICK ACTIONS ──
+function sendChip(msg) {
+  switchTab('chat', document.querySelector('.tab'));
+  document.getElementById('userInput').value = msg;
+  sendMessage();
+}
+
+function sendSuggestion(el) {
+  const msg = el.textContent.replace(/^[^\w\u0900-\u097F]+/, '').trim();
+  document.getElementById('userInput').value = msg;
+  sendMessage();
+}
+
+function setHint(text) {
+  document.getElementById('userInput').value = text;
+  document.getElementById('userInput').focus();
+}
+
+async function askAboutCrop(cropName) {
+  const el = document.getElementById('recoAiResponse');
+  const textEl = document.getElementById('recoAiText');
+  el.style.display = 'block';
+  textEl.innerHTML = '<div class="typing" style="justify-content:center"><span></span><span></span><span></span></div>';
+  el.scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    const text = await callClaude(
+      `Give complete farming guide for ${cropName} including: best soil, when to sow, water needs, fertilizers (NPK), common diseases and pests, expected yield per acre, market tips, and government support schemes. Season context: ${selectedSeason}`,
+    );
+    textEl.innerHTML = formatResponse(text);
+  } catch(e) {
+    textEl.innerHTML = '<span style="color:#dc2626">Error. Please try again.</span>';
+  }
+}
+
+async function askDisease(diseaseName) {
+  const el = document.getElementById('diseaseAiResponse');
+  const textEl = document.getElementById('diseaseAiText');
+  el.style.display = 'block';
+  textEl.innerHTML = '<div class="typing" style="justify-content:center"><span></span><span></span><span></span></div>';
+  el.scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    const text = await callClaude(
+      `Provide detailed information about ${diseaseName}: symptoms to identify it, causes, immediate treatment (both organic/natural and chemical/medicine), prevention, and when to call a doctor/vet. Give practical actionable advice.`
+    );
+    textEl.innerHTML = formatResponse(text);
+  } catch(e) {
+    textEl.innerHTML = '<span style="color:#dc2626">Error. Please try again.</span>';
+  }
+}
+
+async function askSoil(question) {
+  const el = document.getElementById('soilAiResponse');
+  const textEl = document.getElementById('soilAiText');
+  el.style.display = 'block';
+  textEl.innerHTML = '<div class="typing" style="justify-content:center"><span></span><span></span><span></span></div>';
+  el.scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    const text = await callClaude(question);
+    textEl.innerHTML = formatResponse(text);
+  } catch(e) {
+    textEl.innerHTML = '<span style="color:#dc2626">Error. Please try again.</span>';
+  }
+}
+
+// ── UI HELPERS ──
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.tab')[['chat','reco','disease','soil'].indexOf(id)].classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+function setLang(lang) {
+  selectedLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('lang' + (lang === 'both' ? 'Both' : lang === 'hindi' ? 'Hi' : 'En')).classList.add('active');
+}
+
+function setSeason(s) {
+  selectedSeason = s;
+  document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.season-btn').classList.add('active');
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function scrollBottom() {
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Fix tab click handlers
+document.querySelectorAll('.tab').forEach((tab, i) => {
+  const ids = ['chat', 'reco', 'disease', 'soil'];
+  tab.onclick = function() { switchTab(ids[i], this); };
+});
+</script>
+</body>
+</html>
