@@ -48,9 +48,11 @@ Provides both offline (rule-based) and online (AI) capabilities
 Is deployable for free using GitHub Pages
 ## Future Scope
 
- Image-based disease detection using CNN / TensorFlow.js
- Weather API integration for real-time crop alerts
- Voice input support for farmers who cannot type
+ Image-based disease detection using CNN / TensorFlow.js,
+ 
+ Weather API integration for real-time crop alerts,
+ 
+ Voice input support for farmers who cannot type,
  SMS-based chatbot for feature phone users
  Integration with government mandi prices API
  Mobile app version (React Native / Flutter)
