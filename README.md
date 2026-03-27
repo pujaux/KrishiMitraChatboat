@@ -45,8 +45,11 @@ VS Code with Live Server extension
 This project was developed as part of a college project on AI-powered agricultural assistance. The goal was to create a practical, farmer-friendly tool that:
 
 1)Requires no technical knowledge to use
+
 2)Works in the farmer's native language
+
 3)Provides both offline (rule-based) and online (AI) capabilities
+
 4)Is deployable for free using GitHub Pages
 ## Future Scope
 
